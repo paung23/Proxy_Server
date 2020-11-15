@@ -1,0 +1,12 @@
+# build file #
+######################
+build
+
+# IDE generated files #
+######################
+cmake-build-debug
+.idea
+
+# OS generated files #
+######################
+.DS_Store
