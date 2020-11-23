@@ -2,10 +2,9 @@
 #include <asio.hpp>
 #include <ctime>
 #include <iostream>
-#include <string>
-
 #include <istream>
 #include <ostream>
+#include <string>
 
 using asio::ip::tcp;
 
@@ -111,18 +110,15 @@ int main() {
         for (int i = 0; i < len; i++) {
             auto x = *reinterpret_cast<char*>(&buf.data()[i]);
             //std::cout << x;
-
             request += x;
         }
 
         int get_begin = request.find("GET ")+4;
         int get_end = request.find("HTTP/1.0")-5; //Only for Firefox on Phyo's laptop
-
         std::string get_string = request.substr(get_begin, get_end);
 
         int host_begin = request.find("Host: ")+6;
-        int host_end = request.find("User-Agent:")-44; //Only for Firefox on Phyo's laptop
-
+        int host_end = request.find("User-Agent:")-46; //Only for Firefox on Phyo's laptop
         std::string host_string = request.substr(host_begin, host_end);
 
         http_request(get_string, host_string);
