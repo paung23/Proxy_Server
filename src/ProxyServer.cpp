@@ -8,7 +8,7 @@
 
 using asio::ip::tcp;
 
-int http_request(std::string get_string, std::string host_string) {
+std::string http_request(std::string get_string, std::string host_string) {
     try {
         asio::io_service io_service;
         asio::error_code error;
@@ -39,6 +39,8 @@ int http_request(std::string get_string, std::string host_string) {
         // Send the request.
         asio::write(socket, request);
 
+        std::string http_response = ""; // Phyo: Formation of HTTP response
+
         // Read the response status line. The response streambuf will automatically
         // grow to accommodate the entire line. The growth may be limited by passing
         // a maximum size to the streambuf constructor.
@@ -54,37 +56,59 @@ int http_request(std::string get_string, std::string host_string) {
         std::string status_message;
         std::getline(response_stream, status_message);
         if (!response_stream || http_version.substr(0, 5) != "HTTP/") {
-            std::cout << "Invalid response\n";
-            return 1;
+            return "Invalid response\n";
         }
         if (status_code != 200) {
-            std::cout << "Response returned with status code " << status_code << "\n";
-            return 1;
+            return "Response returned with status code "+std::to_string(status_code)+"\n";
         }
+
+        http_response += "HTTP/1.0 200 OK\n"; // Phyo: Formation of HTTP response
 
         // Read the response headers, which are terminated by a blank line.
         asio::read_until(socket, response, "\r\n\r\n");
 
         // Process the response headers.
         std::string header;
-        while (std::getline(response_stream, header) && header != "\r")
-            std::cout << header << "\n";
-        std::cout << "\n";
+        while (std::getline(response_stream, header) && header != "\r") {
+            http_response += header + "\n"; // Phyo: Formation of HTTP response
+        }
+        http_response += "\n"; // Phyo: Formation of HTTP response
 
-        // Write whatever content we already have to output.
-        if (response.size() > 0)
-            std::cout << &response;
+        std::string body;
+        bool first = true;
+        while (std::getline(response_stream, body)) {
+            if (first) {
+                http_response += body; // Phyo: Formation of HTTP response
+                first = false;
+            }
+            else {
+                http_response += "\n" + body; // Phyo: Formation of HTTP response
+            }
 
-        // Read until EOF, writing data to output as we go.
-        while (asio::read(socket, response, asio::transfer_at_least(1), error))
-            std::cout << &response;
+        }
+        while (asio::read(socket, response, asio::transfer_at_least(1), error)) {
+            std::istream new_response_stream(&response);
+            first = true;
+            while (std::getline(new_response_stream, body)) {
+                if (first) {
+                    http_response += body; // Phyo: Formation of HTTP response
+                    first = false;
+                }
+                else {
+                    http_response += "\n" + body; // Phyo: Formation of HTTP response
+                }
+            }
+        }
         if (error != asio::error::eof)
             throw error;
-    } catch (std::exception& e) {
+
+        return http_response;
+    }
+    catch (std::exception& e) {
         std::cout << "Exception: " << e.what() << "\n";
     }
 
-    return 0;
+    return "Error!";
 }
 
 int main() {
@@ -95,7 +119,7 @@ int main() {
         std::string request = "";
 
         // Wait for client
-        std::cout << ">>> Waiting for incoming requests..." << std::endl;
+        std::cout << ">>> Listening to incoming requests from Firefox at port 8001..." << std::endl;
         tcp::socket socket(io_context);
         acceptor.accept(socket);
 
@@ -103,13 +127,8 @@ int main() {
         asio::error_code error;
         size_t len = socket.read_some(asio::buffer(buf), error);
 
-        // Example of error handling
-        // if (error != asio::error::eof)
-        //   throw asio::system_error(error);
-
         for (int i = 0; i < len; i++) {
             auto x = *reinterpret_cast<char*>(&buf.data()[i]);
-            //std::cout << x;
             request += x;
         }
 
@@ -121,7 +140,9 @@ int main() {
         int host_end = request.find("User-Agent:")-46; //Only for Firefox on Phyo's laptop
         std::string host_string = request.substr(host_begin, host_end);
 
-        http_request(get_string, host_string);
+        std::string http_response = http_request(get_string, host_string);
+
+        asio::write(socket, asio::buffer(http_response), error);
     }
 
     return 0;
