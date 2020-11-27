@@ -140,6 +140,14 @@ int main() {
         std::string::size_type host_end = request.find("User-Agent:", host_begin) - 2;
         std::string host_string = request.substr(host_begin, host_end - host_begin);
 
+        if (get_string.find("www.") == std::string::npos) {
+            get_string.insert(7, "www.");
+        }
+
+        if (host_string.find("www.") == std::string::npos) {
+            host_string = "www." + host_string;
+        }
+
         std::cout << "Get: " << get_string << std::endl;
         std::cout << "Host: " << host_string << std::endl;
 
