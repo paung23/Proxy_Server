@@ -132,13 +132,16 @@ int main() {
             request += x;
         }
 
-        int get_begin = request.find("GET ")+4;
-        int get_end = request.find("HTTP/1.0")-5; //Only for Firefox on Phyo's laptop
-        std::string get_string = request.substr(get_begin, get_end);
+        std::string::size_type get_begin = request.find("GET ") + 4;
+        std::string::size_type get_end = request.find("\n", get_begin) - 10;
+        std::string get_string = request.substr(get_begin, get_end - get_begin);
 
-        int host_begin = request.find("Host: ")+6;
-        int host_end = request.find("User-Agent:")-46; //Only for Firefox on Phyo's laptop
-        std::string host_string = request.substr(host_begin, host_end);
+        std::string::size_type host_begin = request.find("Host: ") + 6;
+        std::string::size_type host_end = request.find("User-Agent:", host_begin) - 2;
+        std::string host_string = request.substr(host_begin, host_end - host_begin);
+
+        std::cout << "Get: " << get_string << std::endl;
+        std::cout << "Host: " << host_string << std::endl;
 
         std::string http_response = http_request(get_string, host_string);
 
