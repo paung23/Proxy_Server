@@ -5,6 +5,9 @@
 #include <istream>
 #include <ostream>
 #include <string>
+#include <fstream>
+#include <ctime>
+#include <vector>
 
 using asio::ip::tcp;
 
@@ -112,6 +115,15 @@ std::string http_request(std::string get_string, std::string host_string) {
 }
 
 int main() {
+    std::vector<std::string> blacklist;
+    blacklist.push_back("www.archives.nd.edu");
+
+    std::ofstream outfile;
+    outfile.open("../output.txt");
+
+    time_t now = time(0);
+    char* dt = ctime(&now);
+
     asio::io_context io_context;
     tcp::acceptor acceptor(io_context, tcp::endpoint(tcp::v4(), 8001));
 
@@ -148,13 +160,21 @@ int main() {
             host_string = "www." + host_string;
         }
 
-        std::cout << "Get: " << get_string << std::endl;
-        std::cout << "Host: " << host_string << std::endl;
+        outfile << "Get: " << get_string << std::endl;
+        outfile << "Host: " << host_string << std::endl;
+        outfile << "Date: " << dt << std::endl;
 
-        std::string http_response = http_request(get_string, host_string);
+        bool blacklist_check = false;
+        for (size_t i = 0; i < blacklist.size(); i++) {
+            if (blacklist[i] == host_string) blacklist_check = true;
+        }
 
-        asio::write(socket, asio::buffer(http_response), error);
+        if (blacklist_check == false) {
+            std::string http_response = http_request(get_string, host_string);
+            asio::write(socket, asio::buffer(http_response), error);
+        }
+
+        else std::cout << "Invalid request, this domain is blacklisted" << std::endl;
     }
-
     return 0;
 }

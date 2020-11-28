@@ -1,0 +1,52 @@
+Get: http://www.detectportal.firefox.com/success.txt
+Host: www.detectportal.firefox.com
+Date: Sat Nov 28 14:32:03 2020
+
+Get: http://www.archives.nd.edu/
+Host: www.archives.nd.edu
+Date: Sat Nov 28 14:32:03 2020
+
+Get: http://www.archives.nd.edu/
+Host: www.archives.nd.edu
+Date: Sat Nov 28 14:32:03 2020
+
+Get: http://www.archives.nd.edu/
+Host: www.archives.nd.edu
+Date: Sat Nov 28 14:32:03 2020
+
+Get: http://www.archives.nd.edu/
+Host: www.archives.nd.edu
+Date: Sat Nov 28 14:32:03 2020
+
+Get: http://www.archives.nd.edu/
+Host: www.archives.nd.edu
+Date: Sat Nov 28 14:32:03 2020
+
+Get: http://www.archives.nd.edu/
+Host: www.archives.nd.edu
+Date: Sat Nov 28 14:32:03 2020
+
+Get: http://www.archives.nd.edu/
+Host: www.archives.nd.edu
+Date: Sat Nov 28 14:32:03 2020
+
+Get: http://www.archives.nd.edu/
+Host: www.archives.nd.edu
+Date: Sat Nov 28 14:32:03 2020
+
+Get: http://www.archives.nd.edu/
+Host: www.archives.nd.edu
+Date: Sat Nov 28 14:32:03 2020
+
+Get: http://www.archives.nd.edu/
+Host: www.archives.nd.edu
+Date: Sat Nov 28 14:32:03 2020
+
+Get: http://www.detectportal.firefox.com/success.txt
+Host: www.detectportal.firefox.com
+Date: Sat Nov 28 14:32:03 2020
+
+Get: http://www.detectportal.firefox.com/success.txt
+Host: www.detectportal.firefox.com
+Date: Sat Nov 28 14:32:03 2020
+
