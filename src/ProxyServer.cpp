@@ -111,6 +111,9 @@ std::vector<std::string> http_request(std::string get_string, std::string host_s
         asio::write(socket, request);
 
         long packet_size = 0; // Phyo: Packet Size
+        long received_size = 0; // Phyo: Number of received bytes so far
+
+        bool connection_status = true; // Sometimes, there is no content-length so we will check whether we still need to read more with the connection status
 
         // For each HTTP response, read it from the socket, analyze for errors, form the output and push it to "responses" vector
         do {
@@ -156,6 +159,9 @@ std::vector<std::string> http_request(std::string get_string, std::string host_s
 
                     //std::cout << "* Content-Length: " << packet_size << std::endl;
                 }
+                if (header.find("Connection: close") != std::string::npos) {
+                    connection_status = false;
+                }
 
                 http_response += header + "\r\n"; // Phyo: Formation of HTTP response
             }
@@ -165,54 +171,45 @@ std::vector<std::string> http_request(std::string get_string, std::string host_s
             bool first = true;
 
             while (std::getline(response_stream, body)) {
+                std::string curLine = "";
                 if (first) {
+                    curLine = body;
                     http_response += body; // Phyo: Formation of HTTP response
                     first = false;
                 }
                 else {
+                    curLine = "\n" + body;
                     http_response += "\n" + body; // Phyo: Formation of HTTP response
                 }
-
+                received_size += curLine.size();
             }
 
-            while (asio::read(socket, response, asio::transfer_at_least(1), error)) {
+            while (asio::read(socket, response, asio::transfer_all(), error)) {
                 std::istream new_response_stream(&response);
                 first = true;
                 while (std::getline(new_response_stream, body)) {
+                    std::string curLine = "";
                     if (first) {
+                        curLine = body;
                         http_response += body; // Phyo: Formation of HTTP response
                         first = false;
                     }
                     else {
+                        curLine = "\n" + body;
                         http_response += "\n" + body; // Phyo: Formation of HTTP response
                     }
+                    received_size += curLine.size();
                 }
             }
             if (error != asio::error::eof)
                 throw error;
 
+            std::cout << packet_size << "," << received_size << std::endl;
+
             responses.push_back(http_response);
-        } while (packet_size > 1500);
+        } while ((packet_size > 1500) && (connection_status));
 
         return responses;
-
-        /**
-         * Another approach: Reading the whole HTTP response directly --> works for some images
-         *
-        std::string http_response = ""; // Phyo: Formation of HTTP response
-        asio::streambuf response;
-        asio::read(socket, response, error);
-        std::istream response_stream(&response);
-        std::string line;
-        std::string output;
-        while (std::getline(response_stream, line)) {
-            //std::cout << line << std::endl;
-            output += line+"\n";
-        }
-        if (error != asio::error::eof)
-            throw error;
-        return output;
-         */
     }
     catch (std::exception& e) {
         std::cout << "Exception: " << e.what() << "\n";
@@ -264,11 +261,22 @@ int main(int argc, char* argv[]) {
         for (int i = 0; i < len; i++) {
             auto x = *reinterpret_cast<char*>(&buf.data()[i]);
             client_request += x;
+            //std::cout << x;
         }
 
+        std::cout << " - A request has been made." << std::endl;
+
         // Parsing GET and host from the request
-        std::string::size_type get_begin = client_request.find("GET ") + 4;
-        std::string::size_type get_end = client_request.find("\n", get_begin) - 10;
+        std::string::size_type get_begin = client_request.find("GET ");
+        std::string::size_type get_end;
+        if (get_begin == std::string::npos) { // Sometimes, it starts with CONNECT
+            get_begin = client_request.find("CONNECT ") + 8;
+            get_end = client_request.find("HTTP/1.1", get_begin) - 1;
+        }
+        else {
+            get_begin += 4;
+            get_end = client_request.find("HTTP/1.0", get_begin) - 1;
+        }
         std::string get_string = client_request.substr(get_begin, get_end - get_begin);
 
         std::string::size_type host_begin = client_request.find("Host: ") + 6;
@@ -281,6 +289,7 @@ int main(int argc, char* argv[]) {
             std::cout << "- Bad Request" << std::endl;
         }
         else {
+            /**
             // Add "www." if it is not there already
             if (get_string.find("www.") == std::string::npos) {
                 get_string.insert(7, "www.");
@@ -289,6 +298,7 @@ int main(int argc, char* argv[]) {
             if (host_string.find("www.") == std::string::npos) {
                 host_string = "www." + host_string;
             }
+             */
 
             // Log the request
             outfile << "GET " << get_string << std::endl;
@@ -307,7 +317,7 @@ int main(int argc, char* argv[]) {
 
                 for (int i = 0; i < responses.size(); i++) {
                     asio::write(socket, asio::buffer(responses[i]), error);
-                    std::cout << "- Request processed." << std::endl;
+                    std::cout << "- The request has been fulfilled." << std::endl;
                 }
             }
             else {
