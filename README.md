@@ -9,7 +9,17 @@ To use this proxy server, first clone the git repo:
 ```
 git clone https://github.com/paung23/Proxy_Server.git
 ```
-You can then go into the repo and do the following:
+
+In the client web browser you will be using, please go into the network settings and set up the manual proxy 
+configuration. Enter "localhost" or "127.0.0.1" for hostname (or a custom IP address if you want but you will need to
+change that in the code as well) and "8001" (or any port number you want to use) for port. Depending on which browser 
+you are using, you will also need to go into the configuration and make sure three things: (1) the HTTP version is 1.0, 
+(2) the network HTTP proxy keepalive is turned off, and (3) the traffic pipelining is turned off.
+
+We have used Firefox (v.82.0.3) as the client web browser while developing this proxy server, and so, in Firefox, you can 
+set up the above three things in 'about:config'.
+
+Afterwards, you can then go into the repo and do the following:
 ```
 mkdir build
 cd build
