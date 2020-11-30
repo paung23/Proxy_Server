@@ -143,7 +143,7 @@ std::vector<std::string> http_request(std::string get_string, std::string host_s
                 return responses;
             }
 
-            http_response += "HTTP/1.0 200 OK\r\n"; // Phyo: Formation of HTTP response
+            http_response += "HTTP/1.0 200 OK\n"; // Phyo: Formation of HTTP response
 
             // Read the response headers, which are terminated by a blank line.
             asio::read_until(socket, response, "\r\n\r\n");
@@ -163,9 +163,9 @@ std::vector<std::string> http_request(std::string get_string, std::string host_s
                     connection_status = false;
                 }
 
-                http_response += header + "\r\n"; // Phyo: Formation of HTTP response
+                http_response += header + "\n"; // Phyo: Formation of HTTP response
             }
-            http_response += "\r\n"; // Phyo: Formation of HTTP response
+            http_response += "\n"; // Phyo: Formation of HTTP response
 
             std::string body;
             bool first = true;
@@ -204,7 +204,7 @@ std::vector<std::string> http_request(std::string get_string, std::string host_s
             if (error != asio::error::eof)
                 throw error;
 
-            std::cout << packet_size << "," << received_size << std::endl;
+            //std::cout << packet_size << "," << received_size << std::endl;
 
             responses.push_back(http_response);
         } while ((packet_size > 1500) && (connection_status));
@@ -264,7 +264,7 @@ int main(int argc, char* argv[]) {
             //std::cout << x;
         }
 
-        std::cout << " - A request has been made." << std::endl;
+        std::cout << "- A request has been made." << std::endl;
 
         // Parsing GET and host from the request
         std::string::size_type get_begin = client_request.find("GET ");
@@ -317,8 +317,9 @@ int main(int argc, char* argv[]) {
 
                 for (int i = 0; i < responses.size(); i++) {
                     asio::write(socket, asio::buffer(responses[i]), error);
-                    std::cout << "- The request has been fulfilled." << std::endl;
+                    std::cout << "- HTTP response " << i+1 << std::endl;
                 }
+                std::cout << "- The request has been fulfilled." << std::endl;
             }
             else {
                 asio::write(socket, asio::buffer(makeCustomHTTPresponse(403, "Forbidden", "Access is forbidden to the requested page.")), error);
