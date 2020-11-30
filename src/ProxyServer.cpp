@@ -204,8 +204,6 @@ std::vector<std::string> http_request(std::string get_string, std::string host_s
             if (error != asio::error::eof)
                 throw error;
 
-            //std::cout << packet_size << "," << received_size << std::endl;
-
             responses.push_back(http_response);
         } while ((packet_size > 1500) && (connection_status));
 
@@ -261,7 +259,7 @@ int main(int argc, char* argv[]) {
         for (int i = 0; i < len; i++) {
             auto x = *reinterpret_cast<char*>(&buf.data()[i]);
             client_request += x;
-            //std::cout << x;
+            std::cout << x;
         }
 
         std::cout << "- A request has been made." << std::endl;
@@ -277,11 +275,17 @@ int main(int argc, char* argv[]) {
             get_begin += 4;
             get_end = client_request.find("HTTP/1.0", get_begin) - 1;
         }
-        std::string get_string = client_request.substr(get_begin, get_end - get_begin);
+        std::string get_string = "";
+        if (get_begin < len) {
+            get_string = client_request.substr(get_begin, get_end - get_begin);
+        }
 
         std::string::size_type host_begin = client_request.find("Host: ") + 6;
         std::string::size_type host_end = client_request.find("User-Agent:", host_begin) - 2;
-        std::string host_string = client_request.substr(host_begin, host_end - host_begin);
+        std::string host_string = "";
+        if (host_begin < len) {
+            host_string = client_request.substr(host_begin, host_end - host_begin);
+        }
 
         // If the request is not using HTTP protocol, make a custom HTTP error response
         if (get_string.find("http://") == std::string::npos) {
@@ -289,17 +293,6 @@ int main(int argc, char* argv[]) {
             std::cout << "- Bad Request" << std::endl;
         }
         else {
-            /**
-            // Add "www." if it is not there already
-            if (get_string.find("www.") == std::string::npos) {
-                get_string.insert(7, "www.");
-            }
-
-            if (host_string.find("www.") == std::string::npos) {
-                host_string = "www." + host_string;
-            }
-             */
-
             // Log the request
             outfile << "GET " << get_string << std::endl;
             outfile << "Host: " << host_string << std::endl;
