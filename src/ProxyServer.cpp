@@ -294,9 +294,7 @@ int main(int argc, char* argv[]) {
         }
         else {
             // Log the request
-            outfile << "GET " << get_string << std::endl;
-            outfile << "Host: " << host_string << std::endl;
-            outfile << "Timestamp: " << dt << std::endl;
+            outfile << dt << " Get: " << get_string << " Host: " << host_string << std::endl;
 
             // Do a check with the blacklisted sites
             bool blacklist_check = false;
